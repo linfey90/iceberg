@@ -97,6 +97,29 @@ public abstract class DeleteReadTests {
     table.newAppend().appendFile(dataFile).commit();
   }
 
+  @Test
+  public void testEqualityDeletes() throws IOException {
+    Schema deleteRowSchema = table.schema().select("data");
+    Record dataDelete = GenericRecord.create(deleteRowSchema);
+    List<Record> dataDeletes =
+            Lists.newArrayList(
+                    dataDelete.copy("data", "a"), // id = 29
+                    dataDelete.copy("data", "d"), // id = 89
+                    dataDelete.copy("data", "g") // id = 122
+            );
+
+    DeleteFile eqDeletes =
+            FileHelpers.writeDeleteFile(
+                    table, Files.localOutput(temp.newFile()), Row.of(0), dataDeletes, deleteRowSchema);
+
+    table.newRowDelta().addDeletes(eqDeletes).commit();
+
+    StructLikeSet expected = rowSetWithoutIds(table, records, 29, 89, 122);
+    StructLikeSet actual = rowSet(tableName, table, "*");
+
+    Assert.assertEquals("Table should contain expected rows", expected, actual);
+  }
+
   @After
   public void cleanup() throws IOException {
     dropTable("test");
@@ -169,29 +192,6 @@ public abstract class DeleteReadTests {
 
   protected boolean expectPruned() {
     return true;
-  }
-
-  @Test
-  public void testEqualityDeletes() throws IOException {
-    Schema deleteRowSchema = table.schema().select("data");
-    Record dataDelete = GenericRecord.create(deleteRowSchema);
-    List<Record> dataDeletes =
-        Lists.newArrayList(
-            dataDelete.copy("data", "a"), // id = 29
-            dataDelete.copy("data", "d"), // id = 89
-            dataDelete.copy("data", "g") // id = 122
-            );
-
-    DeleteFile eqDeletes =
-        FileHelpers.writeDeleteFile(
-            table, Files.localOutput(temp.newFile()), Row.of(0), dataDeletes, deleteRowSchema);
-
-    table.newRowDelta().addDeletes(eqDeletes).commit();
-
-    StructLikeSet expected = rowSetWithoutIds(table, records, 29, 89, 122);
-    StructLikeSet actual = rowSet(tableName, table, "*");
-
-    Assert.assertEquals("Table should contain expected rows", expected, actual);
   }
 
   @Test

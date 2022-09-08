@@ -66,11 +66,11 @@ public abstract class TestAppenderFactory<T> extends TableTestBase {
   @Parameterized.Parameters(name = "FileFormat={0}, Partitioned={1}")
   public static Object[] parameters() {
     return new Object[][] {
-      new Object[] {"avro", false},
-      new Object[] {"avro", true},
-      new Object[] {"orc", false},
-      new Object[] {"orc", true},
-      new Object[] {"parquet", false},
+//      new Object[] {"avro", false},
+//      new Object[] {"avro", true},
+//      new Object[] {"orc", false},
+//      new Object[] {"orc", true},
+//      new Object[] {"parquet", false},
       new Object[] {"parquet", true}
     };
   }
